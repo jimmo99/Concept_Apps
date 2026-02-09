@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Más Comunica2 - Generador de Contenido IA</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --secondary: #10b981;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --border: #e2e8f0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f1f5f9;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .logo-icon {
+            font-size: 1.8rem;
+        }
+        
+        .tagline {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        main {
+            padding: 2rem 0;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--gray);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+        
+        .btn-success {
+            background-color: var(--secondary);
+        }
+        
+        .btn-success:hover {
+            background-color: #0da271;
+        }
+        
+        .btn-full {
+            width: 100%;
+        }
+        
+        .result-container {
+            margin-top: 1.5rem;
+        }
+        
+        .result-box {
+            background-color: var(--light);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            min-height: 150px;
+            white-space: pre-wrap;
+        }
+        
+        .image-container {
+            position: relative;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .image-preview {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .image-placeholder {
+            width: 100%;
+            height: 200px;
+            background-color: var(--light);
+            border: 2px dashed var(--border);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+        }
+        
+        .image-placeholder i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .social-platforms {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .platform-btn {
+            flex: 1;
+            padding: 0.75rem;
+            background-color: var(--light);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .platform-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .platform-btn:hover:not(.active) {
+            background-color: #e2e8f0;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 2rem;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .footer-logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .footer-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            background-color: var(--secondary);
+            color: white;
+            border-radius: 6px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .image-credits {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 0.5rem;
+            text-align: center;
+        }
+        
+        .auto-generate {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">✨</span>
+                    <div>
+                        <h1>Más Comunica2</h1>
+                        <div class="tagline">Generación automática de contenido con IA</div>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <span>Panel de Control</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="container">
+        <div class="dashboard">
+            <div class="column">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Generar Contenido para Redes Sociales</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="platform">Plataforma</label>
+                        <div class="social-platforms">
+                            <div class="platform-btn active" data-platform="instagram">Instagram</div>
+                            <div class="platform-btn" data-platform="facebook">Facebook</div>
+                            <div class="platform-btn" data-platform="twitter">Twitter</div>
+                            <div class="platform-btn" data-platform="linkedin">LinkedIn</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="topic">Tema o Idea Principal</label>
+                        <input type="text" id="topic" placeholder="Ej: Beneficios del marketing digital para pequeñas empresas">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tone">Tono del Mensaje</label>
+                        <select id="tone">
+                            <option value="profesional">Profesional</option>
+                            <option value="amigable">Amigable</option>
+                            <option value="divertido">Divertido</option>
+                            <option value="inspirador">Inspirador</option>
+                            <option value="persuasivo">Persuasivo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="keywords">Palabras Clave (separadas por comas)</label>
+                        <input type="text" id="keywords" placeholder="Ej: marketing, digital, crecimiento, redes sociales">
+                    </div>
+                    
+                    <button id="generate-btn" class="btn btn-full">
+                        <span>Generar Contenido</span>
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Contenido Generado</h2>
+                    </div>
+                    
+                    <div class="result-container">
+                        <div class="result-box" id="text-result">
+                            El contenido generado aparecerá aquí...
+                        </div>
+                    </div>
+                    
+                    <div class="actions">
+                        <button id="copy-text" class="btn btn-secondary">Copiar Texto</button>
+                        <button id="regenerate-text" class="btn">Regenerar</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="column">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Generar Imagen</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="image-prompt">Descripción para la Imagen</label>
+                        <textarea id="image-prompt" placeholder="Describe la imagen que deseas generar..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="image-style">Estilo de Imagen</label>
+                        <select id="image-style">
+                            <option value="fotorealista">Fotorrealista</option>
+                            <option value="artistico">Artístico</option>
+                            <option value="minimalista">Minimalista</option>
+                            <option value="colorido">Colorido</option>
+                            <option value="vintage">Vintage</option>
+                        </select>
+                    </div>
+                    
+                    <div class="auto-generate">
+                        <label class="switch">
+                            <input type="checkbox" id="auto-generate">
+                            <span class="slider"></span>
+                        </label>
+                        <span>Generar imagen automáticamente</span>
+                    </div>
+                    
+                    <button id="generate-image-btn" class="btn btn-full">
+                        <span>Generar Imagen</span>
+                    </button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Imagen Generada</h2>
+                    </div>
+                    
+                    <div class="result-container">
+                        <div class="image-container">
+                            <div id="image-placeholder" class="image-placeholder">
+                                <i>🖼️</i>
+                                <span>La imagen generada aparecerá aquí...</span>
+                            </div>
+                            <img id="image-result" class="image-preview" src="" alt="Imagen generada">
+                        </div>
+                        <div id="image-credits" class="image-credits"></div>
+                    </div>
+                    
+                    <div class="actions">
+                        <button id="download-image" class="btn btn-secondary">Descargar</button>
+                        <button id="regenerate-image" class="btn">Regenerar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p id="loading-text">Generando contenido con IA...</p>
+        </div>
+    </main>
+    
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">Más Comunica2</div>
+                <div class="footer-info">Marketing y Comunicación Digital | Automatización con IA</div>
+            </div>
+        </div>
+    </footer>
+    
+    <div class="notification" id="notification">Contenido copiado al portapapeles</div>
+    
+    <script>
+        // Elementos del DOM
+        const platformButtons = document.querySelectorAll('.platform-btn');
+        const generateBtn = document.getElementById('generate-btn');
+        const generateImageBtn = document.getElementById('generate-image-btn');
+        const textResult = document.getElementById('text-result');
+        const imageResult = document.getElementById('image-result');
+        const imagePlaceholder = document.getElementById('image-placeholder');
+        const copyTextBtn = document.getElementById('copy-text');
+        const regenerateTextBtn = document.getElementById('regenerate-text');
+        const downloadImageBtn = document.getElementById('download-image');
+        const regenerateImageBtn = document.getElementById('regenerate-image');
+        const loading = document.getElementById('loading');
+        const loadingText = document.getElementById('loading-text');
+        const notification = document.getElementById('notification');
+        const imageCredits = document.getElementById('image-credits');
+        const autoGenerateCheckbox = document.getElementById('auto-generate');
+        
+        // Variables de estado
+        let currentPlatform = 'instagram';
+        let lastTopic = '';
+        let lastImagePrompt = '';
+        let currentImageUrl = '';
+        let autoGenerateEnabled = false;
+        
+        // Selección de plataforma
+        platformButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                platformButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPlatform = btn.dataset.platform;
+            });
+        });
+        
+        // Generar contenido de texto
+        generateBtn.addEventListener('click', generateContent);
+        regenerateTextBtn.addEventListener('click', generateContent);
+        
+        // Generar imagen
+        generateImageBtn.addEventListener('click', generateImage);
+        regenerateImageBtn.addEventListener('click', generateImage);
+        
+        // Auto-generar imagen cuando cambia el texto
+        autoGenerateCheckbox.addEventListener('change', function() {
+            autoGenerateEnabled = this.checked;
+        });
+        
+        // Copiar texto al portapapeles
+        copyTextBtn.addEventListener('click', () => {
+            const text = textResult.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Texto copiado al portapapeles');
+            });
+        });
+        
+        // Descargar imagen
+        downloadImageBtn.addEventListener('click', () => {
+            if (currentImageUrl) {
+                const link = document.createElement('a');
+                link.href = currentImageUrl;
+                link.download = `imagen-generada-${Date.now()}.jpg`;
+                link.click();
+                showNotification('Imagen descargada');
+            } else {
+                showNotification('No hay imagen para descargar');
+            }
+        });
+        
+        // Funciones principales
+        function generateContent() {
+            const topic = document.getElementById('topic').value;
+            const tone = document.getElementById('tone').value;
+            const keywords = document.getElementById('keywords').value;
+            
+            if (!topic.trim()) {
+                showNotification('Por favor, ingresa un tema o idea principal');
+                return;
+            }
+            
+            lastTopic = topic;
+            
+            // Mostrar carga
+            loadingText.textContent = 'Generando contenido con IA...';
+            loading.style.display = 'block';
+            
+            // Simulación de llamada a API de OpenAI
+            setTimeout(() => {
+                const content = generateMockContent(topic, tone, keywords, currentPlatform);
+                textResult.textContent = content;
+                loading.style.display = 'none';
+                showNotification('Contenido generado exitosamente');
+                
+                // Si está activada la generación automática de imágenes, generar una imagen
+                if (autoGenerateEnabled) {
+                    // Crear automáticamente un prompt para la imagen basado en el contenido
+                    const imagePrompt = generateImagePromptFromContent(topic, tone, keywords);
+                    document.getElementById('image-prompt').value = imagePrompt;
+                    generateImage();
+                }
+            }, 2000);
+        }
+        
+        function generateImage() {
+            const prompt = document.getElementById('image-prompt').value;
+            const style = document.getElementById('image-style').value;
+            
+            if (!prompt.trim()) {
+                showNotification('Por favor, describe la imagen que deseas generar');
+                return;
+            }
+            
+            lastImagePrompt = prompt;
+            
+            // Mostrar carga
+            loadingText.textContent = 'Generando imagen con IA...';
+            loading.style.display = 'block';
+            
+            // Simulación de generación de imagen con IA
+            setTimeout(() => {
+                // En un caso real, aquí se conectaría con una API de IA como DALL-E, Midjourney, etc.
+                // Para este ejemplo, simularemos la generación de una imagen única basada en el prompt
+                
+                // Generar una imagen única basada en el prompt usando un servicio de placeholder
+                const imageId = generateImageIdFromPrompt(prompt);
+                const width = 800;
+                const height = 400;
+                
+                // Usar Picsum para imágenes únicas basadas en el ID generado
+                currentImageUrl = `https://picsum.photos/seed/${imageId}/${width}/${height}`;
+                
+                imageResult.src = currentImageUrl;
+                imageResult.style.display = 'block';
+                imagePlaceholder.style.display = 'none';
+                
+                // Mostrar información de la imagen generada
+                imageCredits.textContent = `Imagen generada por IA - Estilo: ${style}`;
+                
+                loading.style.display = 'none';
+                showNotification('Imagen generada exitosamente');
+            }, 2500);
+        }
+        
+        // Función para generar un ID único basado en el prompt
+        function generateImageIdFromPrompt(prompt) {
+            // Crear un hash simple del prompt para generar una ID única
+            let hash = 0;
+            for (let i = 0; i < prompt.length; i++) {
+                const char = prompt.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convertir a entero de 32 bits
+            }
+            return Math.abs(hash);
+        }
+        
+        // Función para generar automáticamente un prompt de imagen basado en el contenido
+        function generateImagePromptFromContent(topic, tone, keywords) {
+            const toneAdjectives = {
+                profesional: "profesional, corporativo, serio",
+                amigable: "amigable, acogedor, cercano",
+                divertido: "divertido, colorido, alegre",
+                inspirador: "inspirador, motivador, elevado",
+                persuasivo: "persuasivo, convincente, llamativo"
+            };
+            
+            const styleMap = {
+                'fotorealista': 'fotorrealista, detallado',
+                'artistico': 'artístico, creativo, pintura',
+                'minimalista': 'minimalista, simple, limpio',
+                'colorido': 'colorido, vibrante, saturado',
+                'vintage': 'vintage, retro, antiguo'
+            };
+            
+            const style = document.getElementById('image-style').value;
+            const styleAdjective = styleMap[style] || 'moderno';
+            const toneAdjective = toneAdjectives[tone] || 'profesional';
+            
+            return `Imagen ${styleAdjective} sobre "${topic}" con estilo ${toneAdjective}. ${keywords ? `Incluir elementos relacionados con: ${keywords}` : ''}`;
+        }
+        
+        // Función para generar contenido simulado (en un caso real, esto vendría de la API)
+        function generateMockContent(topic, tone, keywords, platform) {
+            const tones = {
+                profesional: "Desde un enfoque profesional, ",
+                amigable: "¡Hola! Te cuento que ",
+                divertido: "¿Sabías que? 😄 ",
+                inspirador: "Hoy es un gran día para recordar que ",
+                persuasivo: "No te pierdas esta oportunidad: "
+            };
+            
+            const platforms = {
+                instagram: "\n\n#marketing #digital #crecimiento #redessociales",
+                facebook: "\n\n¿Te ha resultado útil esta información? ¡Compártela con tu red!",
+                twitter: "\n\n#MarketingDigital #RedesSociales #Crecimiento",
+                linkedin: "\n\nComparto algunos insights sobre este tema que pueden ser de valor para profesionales y empresas."
+            };
+            
+            const intro = tones[tone] || tones.profesional;
+            const platformSpecific = platforms[platform] || platforms.instagram;
+            
+            return `${intro}${topic} es fundamental para el éxito en el entorno digital actual.
+
+${keywords ? `Palabras clave: ${keywords}` : ''}
+
+${platformSpecific}`;
+        }
+        
+        // Mostrar notificación
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Inicialización
+        document.getElementById('topic').value = 'Beneficios del marketing digital para pequeñas empresas';
+        document.getElementById('keywords').value = 'marketing, digital, crecimiento, redes sociales';
+        document.getElementById('image-prompt').value = 'Personas colaborando en un entorno de oficina moderno con tecnología digital';
+    </script>
+</body>
+</html>

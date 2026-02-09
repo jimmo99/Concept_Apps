@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="eu">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CRM Dokumentala — Pro</title>
+<style>
+  :root {
+    --bg: #f6f8fb;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --primary: #0f172a;
+    --accent: #2563eb;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --border: #e5e7eb;
+    --chip: #eef2ff;
+    --focus: #93c5fd;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--text); }
+  header {
+    position: sticky; top:0; z-index: 5; background: var(--card); border-bottom: 1px solid var(--border);
+  }
+  .toolbar { display:flex; align-items:center; justify-content:space-between; padding: 14px 18px; }
+  .title { display:flex; align-items:center; gap:12px; }
+  .title h1 { font-size: 1.1rem; margin:0; font-weight: 700; }
+  .title .badge { color:#fff; background: var(--accent); padding:4px 8px; border-radius:999px; font-size:.8rem; }
+  .toolbar .actions { display:flex; gap:10px; flex-wrap: wrap; }
+  button { border:1px solid transparent; border-radius:8px; padding:10px 12px; background: var(--accent); color:#fff; font-weight:600; cursor:pointer; }
+  button.secondary { background:#111827; }
+  button.ghost { background: transparent; color: var(--accent); border-color: var(--accent); }
+  button.danger { background: var(--danger); }
+  button:disabled { opacity:.6; cursor:not-allowed; }
+  .page { padding: 16px; max-width: 1400px; margin: 0 auto; }
+  .layout { display:grid; grid-template-columns: 1.3fr 1fr; gap:16px; }
+  @media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,.06); }
+  .card .card-header { padding: 14px 16px; border-bottom: 1px solid var(--border); font-weight:700; }
+  .card .card-body { padding: 14px 16px; }
+  .muted { color: var(--muted); font-size:.9rem; }
+  .grid { display:grid; gap:12px; }
+  .two { grid-template-columns: 1fr 1fr; }
+  .three { grid-template-columns: 1fr 1fr 1fr; }
+  label { font-weight:600; font-size:.9rem; }
+  input[type=text], input[type=email], select, textarea {
+    width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; margin-top:6px; background:#fff;
+  }
+  input:focus, select:focus, textarea:focus { outline:none; box-shadow: 0 0 0 3px var(--focus); }
+  table { width:100%; border-collapse: collapse; }
+  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--border); font-size:.95rem; }
+  thead th { background:#f9fafb; position: sticky; top: 0; z-index: 1; }
+  tbody tr { cursor:pointer; }
+  tbody tr:hover { background:#f3f4f6; }
+  .row-selected { background:#e5f0ff !important; }
+  .searchbar { display:flex; gap:10px; align-items:center; flex-wrap: wrap; }
+  .searchbar input { flex:1; }
+  .chips { display:flex; gap:8px; flex-wrap: wrap; margin-top:8px; }
+  .chip { padding:6px 10px; border-radius:999px; font-size:.85rem; background: var(--chip); border:1px solid var(--border); }
+  .chip.success { background:#ecfdf5; border-color:#d1fae5; color:#065f46; }
+  .chip.warning { background:#fffbeb; border-color:#fde68a; color:#92400e; }
+  .chip.danger { background:#fee2e2; border-color:#fecaca; color:#7f1d1d; }
+  .actions { display:flex; gap:8px; flex-wrap: wrap; }
+  .divider { margin: 12px 0; border-top:1px dashed var(--border); }
+  .dropzone { border:2px dashed var(--border); border-radius: 10px; padding: 14px; text-align:center; color: var(--muted); transition: .15s; }
+  .dropzone.drag { border-color: var(--accent); background:#f0f7ff; color:#1e3a8a; }
+  .toast { position: fixed; bottom: 18px; right: 18px; background:#111827; color:#fff; padding: 12px 14px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,.25); display:none; }
+  .modal-backdrop { position:fixed; inset:0; background: rgba(0,0,0,.35); display:none; align-items:center; justify-content:center; z-index:20; }
+  .modal { background:#fff; border-radius:12px; width:min(900px, 92vw); max-height: 90vh; overflow:auto; }
+  .modal .card-header { display:flex; align-items:center; justify-content:space-between; }
+  .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background:#f1f5f9; border:1px solid #e2e8f0; border-bottom-width:2px; border-radius:6px; padding:2px 6px; }
+  .help { font-size:.9rem; background:#f9fafb; border:1px solid var(--border); border-radius:8px; padding:10px; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="toolbar">
+      <div class="title">
+        <span style="font-size:1.4rem">📘</span>
+        <h1>CRM Dokumentala — Pro</h1>
+        <span class="badge">HTML5 • IndexedDB</span>
+      </div>
+      <div class="actions">
+        <button id="btnNueva">➕ Berria</button>
+        <button class="ghost" id="btnExport">⬇️ Esportatu</button>
+        <button class="ghost" id="btnImport">⬆️ Inportatu</button>
+        <input type="file" id="importInput" style="display:none" accept="application/json" />
+        <button class="secondary" id="btnAyuda">❓ Laguntza</button>
+      </div>
+    </div>
+  </header>
+  <main class="page">
+    <div class="layout">
+      <section class="card">
+        <div class="card-header">🔎 Enpresak bilatu eta zerrendatu</div>
+        <div class="card-body">
+          <div class="searchbar">
+            <input id="searchInput" type="text" placeholder="Bilatu (⌘/Ctrl+K)" />
+            <select id="filterSelect">
+              <option>Eremu guztiak</option>
+              <option>Enpresa</option>
+              <option>Kontaktua</option>
+              <option>Kodea</option>
+              <option>Telefonoa</option>
+              <option>Emaila</option>
+              <option>Sektorea</option>
+              <option>Egoera</option>
+            </select>
+            <button id="btnBuscar">Bilatu</button>
+            <button id="btnLimpiar">Garbitu</button>
+          </div>
+          <div class="chips" id="summaryChips"></div>
+          <div class="divider"></div>
+          <div style="overflow:auto; max-height: 55vh;">
+            <table>
+              <thead>
+                <tr>
+                  <th data-sort="codigo">Kodea ⬍</th>
+                  <th data-sort="empresa">Enpresa ⬍</th>
+                  <th data-sort="contacto">Kontaktua ⬍</th>
+                  <th data-sort="telefono">Telefonoa ⬍</th>
+                  <th data-sort="estado">Egoera ⬍</th>
+                  <th data-sort="fecha_creacion">Data ⬍</th>
+                </tr>
+              </thead>
+              <tbody id="empresaTable"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">📇 Enpresaren xehetasunak</div>
+        <div class="card-body">
+          <div class="grid two">
+            <div>
+              <label>Kodea</label>
+              <input id="codigo" type="text" readonly />
+            </div>
+            <div>
+              <label>Enpresa</label>
+              <input id="empresa" type="text" placeholder="Enpresaren izena" />
+            </div>
+          </div>
+          <div class="grid three">
+            <div>
+              <label>Kontaktua</label>
+              <input id="contacto" type="text" placeholder="Harremanetarako pertsona" />
+            </div>
+            <div>
+              <label>Telefonoa</label>
+              <input id="telefono" type="text" placeholder="+34 600 000 000" />
+            </div>
+            <div>
+              <label>Emaila</label>
+              <input id="email" type="email" placeholder="posta@enpresa.com" />
+            </div>
+          </div>
+          <div class="grid two">
+            <div>
+              <label>Sektorea</label>
+              <select id="sector">
+                <option>🏭 Manufaktura</option>
+                <option>💻 Teknologia</option>
+                <option>🏗️ Eraikuntza</option>
+                <option>🛍️ Txikizkako merkataritza</option>
+                <option>🧰 Zerbitzuak</option>
+                <option>🏥 Osasuna</option>
+                <option>🎓 Hezkuntza</option>
+                <option>🚗 Automozioa</option>
+                <option>🍽️ Ostalaritza</option>
+                <option>📊 Aholkularitza</option>
+                <option>Beste batzuk</option>
+              </select>
+            </div>
+            <div>
+              <label>Egoera</label>
+              <select id="estado">
+                <option>🟢 Aktibo</option>
+                <option>🟡 Itxaroten</option>
+                <option>🔴 Ezaktibo</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label>Oharrak</label>
+            <textarea id="notas" rows="6" placeholder="Bezeroaren oharrak (jarraipena, akordioak, zereginak...)"></textarea>
+          </div>
+          <div class="actions" style="margin-top:10px">
+            <button id="btnGuardar">💾 Gorde</button>
+            <button class="danger" id="btnEliminar">🗑️ Ezabatu</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="grid">
+            <div class="actions" style="justify-content:space-between; align-items:center;">
+              <strong>📂 Enpresaren fitxategiak</strong>
+              <div>
+                <button class="ghost" id="btnSubir">📤 Igo</button>
+                <button class="ghost" id="btnDescargarTodo">⬇️ Deskargatu guztiak</button>
+                <input id="fileInput" type="file" multiple style="display:none" />
+              </div>
+            </div>
+            <div id="dropzone" class="dropzone">Arrastatu fitxategiak hona edo erabili <span class="kbd">Igo</span> botoia</div>
+            <div style="overflow:auto; max-height: 32vh;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Izena</th><th>Mota</th><th>Tamaina</th><th>Data</th><th>Ekintzak</th>
+                  </tr>
+                </thead>
+                <tbody id="fileTable"></tbody>
+              </table>
+            </div>
+            <div class="muted" id="fileSummary">0 fitxategi (0 B)</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="card" style="margin-top:16px;">
+      <div class="card-header">ℹ️ Laguntza azkarra</div>
+      <div class="card-body help">
+        <ul>
+          <li><b>Gorde</b>: Bete Enpresa eta Kontaktua; <i>Kodea</i> automatikoki sortuko da.</li>
+          <li><b>Bilaketa azkarra</b>: Sakatu <span class="kbd">Ctrl/⌘+K</span>; iragazi eremuaren arabera behar baduzu.</li>
+          <li><b>Fitxategiak</b>: Igo, aurreikusi (irudiak/PDF) eta deskargatu ditzakezu; dena zure nabigatzailean gordetzen da.</li>
+          <li><b>Esportatu/Inportatu</b>: Erabili JSON fitxategia datuak beste gailu batera eramateko.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <div id="modalBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="card-header">
+        <span id="modalTitle">Aurreikusi</span>
+        <button id="modalClose" class="ghost">✖️ Itxi</button>
+      </div>
+      <div class="card-body" id="modalBody"></div>
+    </div>
+  </div>
+
+<script>
+// ================= DB Layer (IndexedDB) =================
+const DB_NAME = 'crm_doc_pro_eu';
+const DB_VERSION = 1;
+let db;
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('empresas')) {
+        const emp = db.createObjectStore('empresas', { keyPath: 'codigo' });
+        emp.createIndex('by_empresa', 'empresa');
+      }
+      if (!db.objectStoreNames.contains('archivos')) {
+        const files = db.createObjectStore('archivos', { keyPath: 'id', autoIncrement: true });
+        files.createIndex('by_empresa', 'empresaCodigo');
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+function tx(names, mode='readonly') {
+  const t = db.transaction(names, mode);
+  return {
+    store: (n) => t.objectStore(n),
+    done: new Promise((res, rej)=>{ t.oncomplete = ()=> res(); t.onerror=()=> rej(t.error); })
+  };
+}
+
+async function allEmpresas() {
+  const { store } = tx(['empresas']);
+  return new Promise((resolve)=>{ const r = store('empresas').getAll(); r.onsuccess=()=>resolve(r.result||[]); });
+}
+
+async function putEmpresa(emp) { const { store, done } = tx(['empresas'], 'readwrite'); store('empresas').put(emp); await done; }
+async function deleteEmpresaDB(codigo) { const { store, done } = tx(['empresas'], 'readwrite'); store('empresas').delete(codigo); await done; }
+async function addFiles(empresaCodigo, files) { const { store, done } = tx(['archivos'], 'readwrite'); const s=store('archivos'); const now=new Date().toISOString(); for (const f of files){ s.add({empresaCodigo, nombre:f.name, tipo:f.type||'ezezaguna', tamaño:f.size, fecha: now, blob:f}); } await done; }
+async function filesByEmpresa(empresaCodigo) { const { store } = tx(['archivos']); const idx = store('archivos').index('by_empresa'); return new Promise((resolve)=>{ const r = idx.getAll(empresaCodigo); r.onsuccess=()=>resolve(r.result||[]); }); }
+async function deleteFile(id) { const { store, done } = tx(['archivos'], 'readwrite'); store('archivos').delete(id); await done; }
+async function getFile(id) { const { store } = tx(['archivos']); return new Promise((resolve)=>{ const r = store('archivos').get(id); r.onsuccess=()=>resolve(r.result); }); }
+
+// ================= Utilities =================
+const fmtSize = (b)=>{ if(!b) return '0 B'; const u=['B','KB','MB','GB']; let i=0, v=b; while(v>=1024 && i<u.length-1){ v/=1024; i++; } return `${v.toFixed(1)} ${u[i]}`; };
+const fmtDate = (iso)=>{ if(!iso) return 'N/A'; const d=new Date(iso); return d.toLocaleDateString('eu-ES'); };
+const cleanCodePart = (t)=> (t||'').toUpperCase().replace(/[^A-Z]/g,'').slice(0,3);
+async function genCodigo(empresa, contacto){ const base = cleanCodePart(empresa) + cleanCodePart(contacto); const all = await allEmpresas(); const used = new Set(all.filter(e=> (e.codigo||'').startsWith(base)).map(e=>e.codigo)); let n=1; while(true){ const cand = `${base}${String(n).padStart(3,'0')}`; if(!used.has(cand)) return cand; n++; } }
+function toast(msg, type='info'){ const el = document.getElementById('toast'); el.textContent = msg; el.style.display='block'; el.style.background = type==='error'? '#7f1d1d' : type==='success'? '#065f46' : '#111827'; setTimeout(()=> el.style.display='none', 2500); }
+
+// ================= UI State =================
+let empresaActual = null;
+let sortBy = 'empresa'; let sortDir = 'asc';
+
+async function refreshSummaryChips(){ 
+  const list = await allEmpresas();
+  const cont = document.getElementById('summaryChips'); cont.innerHTML='';
+  const mk=(txt, cls)=>{ const c=document.createElement('span'); c.className = 'chip '+cls; c.textContent = txt; return c; };
+  cont.appendChild(mk(`${list.length} enpresa`, ''));
+  cont.appendChild(mk(`${list.filter(e=> e.estado.includes('Aktibo')).length} aktibo`, 'success'));
+  cont.appendChild(mk(`${list.filter(e=> e.estado.includes('Itxaroten')).length} itxaroten`, 'warning'));
+}
+
+async function cargarEmpresas(){ 
+  const tbody = document.getElementById('empresaTable'); tbody.innerHTML=''; 
+  let list = await allEmpresas();
+  list.sort((a,b)=> { 
+    const va = (a[sortBy]||'').toString().toLowerCase(); 
+    const vb = (b[sortBy]||'').toString().toLowerCase(); 
+    return sortDir==='asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+  for (const e of list) {
+    const tr = document.createElement('tr');
+    tr.dataset.code = e.codigo;
+    tr.innerHTML = `<td>${e.codigo}</td><td>${e.empresa}</td><td>${e.contacto}</td><td>${e.telefono}</td><td>${e.estado}</td><td>${fmtDate(e.fecha_creacion)}</td>`;
+    tr.onclick = ()=> { mostrarDetalle(e); setSelectedRow(e.codigo); };
+    tbody.appendChild(tr);
+  }
+  await refreshSummaryChips(); 
+}
+
+function setSelectedRow(codigo){ 
+  document.querySelectorAll('#empresaTable tr').forEach(r=> r.classList.toggle('row-selected', r.dataset.code === codigo)); 
+}
+
+function clearForm(){ ['codigo','empresa','contacto','telefono','email','notas'].forEach(id=> document.getElementById(id).value=''); }
+
+async function guardar(){ 
+  const empresa = document.getElementById('empresa').value.trim(); 
+  if(!empresa){ toast('Enpresaren izena beharrezkoa da','error'); return; }
+  const contacto = document.getElementById('contacto').value.trim();
+  let codigo = document.getElementById('codigo').value.trim();
+  
+  if(!empresaActual){
+    if(!codigo) {
+        if(empresa.length>=3 && contacto.length>=3) codigo = await genCodigo(empresa, contacto);
+        else { toast('Bete enpresa eta kontaktua kodea sortzeko','error'); return; }
+    }
+    const nuevo = { 
+        codigo, empresa, contacto, 
+        telefono: document.getElementById('telefono').value,
+        email: document.getElementById('email').value,
+        sector: document.getElementById('sector').value,
+        estado: document.getElementById('estado').value,
+        notas: document.getElementById('notas').value,
+        fecha_creacion: new Date().toISOString()
+    };
+    await putEmpresa(nuevo);
+    empresaActual = nuevo;
+  } else {
+    const act = { ...empresaActual, 
+        empresa, contacto,
+        telefono: document.getElementById('telefono').value,
+        email: document.getElementById('email').value,
+        sector: document.getElementById('sector').value,
+        estado: document.getElementById('estado').value,
+        notas: document.getElementById('notas').value
+    };
+    await putEmpresa(act);
+    empresaActual = act;
+  }
+  document.getElementById('codigo').value = codigo;
+  await cargarEmpresas(); 
+  toast('Zuzen gorde da','success'); 
+}
+
+async function eliminar(){ 
+  if(!empresaActual) return;
+  if(!confirm(`Ziur zaude '${empresaActual.empresa}' ezabatu nahi duzula?`)) return;
+  const files = await filesByEmpresa(empresaActual.codigo);
+  for (const f of files) await deleteFile(f.id);
+  await deleteEmpresaDB(empresaActual.codigo);
+  empresaActual = null; clearForm(); await cargarEmpresas(); refreshFiles();
+  toast('Enpresa ezabatua','success');
+}
+
+async function buscar(){
+  const term = document.getElementById('searchInput').value.toLowerCase();
+  const filtro = document.getElementById('filterSelect').value;
+  const tbody = document.getElementById('empresaTable'); tbody.innerHTML='';
+  let list = await allEmpresas();
+  list = list.filter(e => {
+    if(!term) return true;
+    if(filtro === 'Eremu guztiak') return Object.values(e).some(v => String(v).toLowerCase().includes(term));
+    const map = {'Enpresa':'empresa','Kontaktua':'contacto','Kodea':'codigo','Telefonoa':'telefono','Emaila':'email','Sektorea':'sector','Egoera':'estado'};
+    return String(e[map[filtro]] || '').toLowerCase().includes(term);
+  });
+  for (const e of list) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${e.codigo}</td><td>${e.empresa}</td><td>${e.contacto}</td><td>${e.telefono}</td><td>${e.estado}</td><td>${fmtDate(e.fecha_creacion)}</td>`;
+    tr.onclick = ()=> mostrarDetalle(e);
+    tbody.appendChild(tr);
+  }
+}
+
+// Fitxategiak
+async function refreshFiles(){
+  const tbody = document.getElementById('fileTable'); tbody.innerHTML='';
+  if(!empresaActual) { document.getElementById('fileSummary').textContent='0 fitxategi (0 B)'; return; }
+  const files = await filesByEmpresa(empresaActual.codigo);
+  let total = 0;
+  files.forEach(f => {
+    total += f.tamaño;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${f.nombre}</td><td>${f.tipo}</td><td>${fmtSize(f.tamaño)}</td><td>${fmtDate(f.fecha)}</td>
+    <td>
+        <button class="ghost" onclick="viewFile(${f.id})">👁️</button>
+        <button class="ghost" onclick="downloadFile(${f.id})">⬇️</button>
+        <button class="danger" onclick="removeFile(${f.id})">🗑️</button>
+    </td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('fileSummary').textContent = `${files.length} fitxategi (${fmtSize(total)})`;
+}
+
+async function removeFile(id){ if(confirm('Fitxategia ezabatu?')) { await deleteFile(id); refreshFiles(); } }
+async function downloadFile(id){ 
+    const f = await getFile(id); 
+    const url = URL.createObjectURL(f.blob);
+    const a = document.createElement('a'); a.href=url; a.download=f.nombre; a.click();
+}
+async function viewFile(id){
+    const f = await getFile(id);
+    const url = URL.createObjectURL(f.blob);
+    const body = document.getElementById('modalBody'); body.innerHTML='';
+    document.getElementById('modalTitle').textContent = f.nombre;
+    if(f.tipo.startsWith('image/')) body.innerHTML = `<img src="${url}" style="max-width:100%">`;
+    else if(f.tipo === 'application/pdf') body.innerHTML = `<embed src="${url}" type="application/pdf" width="100%" height="500px">`;
+    else body.innerHTML = '<p>Ezin da aurreikusi. Deskargatu fitxategia.</p>';
+    document.getElementById('modalBackdrop').style.display='flex';
+}
+
+function mostrarDetalle(emp){
+  empresaActual = emp;
+  document.getElementById('codigo').value = emp.codigo;
+  document.getElementById('empresa').value = emp.empresa;
+  document.getElementById('contacto').value = emp.contacto;
+  document.getElementById('telefono').value = emp.telefono;
+  document.getElementById('email').value = emp.email;
+  document.getElementById('sector').value = emp.sector;
+  document.getElementById('estado').value = emp.estado;
+  document.getElementById('notas').value = emp.notas;
+  refreshFiles();
+}
+
+// Inizializazioa
+async function init(){
+  db = await openDB();
+  await cargarEmpresas();
+  
+  document.getElementById('btnNueva').onclick = () => { empresaActual=null; clearForm(); refreshFiles(); };
+  document.getElementById('btnGuardar').onclick = guardar;
+  document.getElementById('btnEliminar').onclick = eliminar;
+  document.getElementById('btnBuscar').onclick = buscar;
+  document.getElementById('btnLimpiar').onclick = () => { document.getElementById('searchInput').value=''; cargarEmpresas(); };
+  document.getElementById('btnSubir').onclick = () => document.getElementById('fileInput').click();
+  document.getElementById('fileInput').onchange = async (e) => { if(empresaActual) { await addFiles(empresaActual.codigo, e.target.files); refreshFiles(); } else toast('Hautatu enpresa bat lehenago','error'); };
+  document.getElementById('modalClose').onclick = () => document.getElementById('modalBackdrop').style.display='none';
+  
+  // Drag and drop
+  const dz = document.getElementById('dropzone');
+  dz.ondragover = (e) => { e.preventDefault(); dz.classList.add('drag'); };
+  dz.ondragleave = () => dz.classList.remove('drag');
+  dz.ondrop = async (e) => { e.preventDefault(); dz.classList.remove('drag'); if(empresaActual) { await addFiles(empresaActual.codigo, e.dataTransfer.files); refreshFiles(); } };
+
+  // Esportatu
+  document.getElementById('btnExport').onclick = async () => {
+    const emps = await allEmpresas();
+    const blob = new Blob([JSON.stringify({empresas: emps}, null, 2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='crm_export_eu.json'; a.click();
+  };
+  
+  document.getElementById('btnImport').onclick = () => document.getElementById('importInput').click();
+  document.getElementById('importInput').onchange = async (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const data = JSON.parse(await file.text());
+    for(const emp of data.empresas) await putEmpresa(emp);
+    cargarEmpresas();
+    toast('Datuak inportatu dira','success');
+  };
+
+  toast('Sitema prest dago', 'success');
+}
+
+init();
+</script>
+</body>
+</html>

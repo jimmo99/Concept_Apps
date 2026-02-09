@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laboraba - Pedidos de Ropa Laboral</title>
+    <!-- Incluir jsPDF para generar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Incluir JsBarcode para generar códigos de barras -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 0;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            margin-left: 10px;
+        }
+        
+        .date-time {
+            font-size: 1.1rem;
+            background-color: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+        }
+        
+        .main-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--secondary-color);
+            font-size: 1.4rem;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-download {
+            background-color: var(--success-color);
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            margin-top: 20px;
+        }
+        
+        .btn-download:hover {
+            background-color: #219653;
+        }
+        
+        .btn-add {
+            background-color: var(--warning-color);
+            margin-top: 10px;
+        }
+        
+        .btn-add:hover {
+            background-color: #e67e22;
+        }
+        
+        .btn-remove {
+            background-color: var(--accent-color);
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        
+        .btn-remove:hover {
+            background-color: #c0392b;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        /* Estilos para la tabla de pedidos */
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .order-table th, .order-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .order-table th {
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            font-weight: 600;
+        }
+        
+        .order-table tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .order-table input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .barcode-container {
+            text-align: center;
+            padding: 5px;
+        }
+        
+        .barcode {
+            max-width: 120px;
+            height: 50px;
+        }
+        
+        .barcode-number {
+            font-size: 0.7rem;
+            margin-top: 2px;
+            font-family: monospace;
+            text-align: center;
+        }
+        
+        .total-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--light-color);
+            border-radius: 4px;
+            text-align: right;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .total-amount {
+            color: var(--success-color);
+            font-size: 1.4rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .date-time {
+                margin-top: 10px;
+            }
+            
+            .logo h1 {
+                font-size: 1.5rem;
+            }
+            
+            .order-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .barcode {
+                max-width: 80px;
+                height: 40px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+            
+            .section-title {
+                font-size: 1.2rem;
+            }
+            
+            .order-table th, .order-table td {
+                padding: 8px 10px;
+            }
+            
+            .barcode {
+                max-width: 60px;
+                height: 35px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Laboraba - Vitoria-Gasteiz</h1>
+                </div>
+                <div class="date-time" id="currentDateTime">
+                    <!-- La fecha y hora se actualizarán con JavaScript -->
+                </div>
+            </div>
+        </header>
+        
+        <main class="main-content">
+            <section class="section">
+                <h2 class="section-title">Información del Pedido</h2>
+                
+                <div class="form-group">
+                    <label for="commercialName">Nombre del Comercial</label>
+                    <input type="text" id="commercialName" placeholder="Ingresa tu nombre">
+                </div>
+                
+                <div class="form-group">
+                    <label for="clientName">Nombre del Cliente</label>
+                    <input type="text" id="clientName" placeholder="Nombre completo del cliente">
+                </div>
+                
+                <div class="form-group">
+                    <label for="clientContact">Datos de Contacto del Cliente</label>
+                    <input type="text" id="clientContact" placeholder="Teléfono, email, etc.">
+                </div>
+                
+                <div class="form-group">
+                    <label for="fiscalData">Datos Fiscales</label>
+                    <input type="text" id="fiscalData" placeholder="NIF/CIF, dirección fiscal, etc.">
+                </div>
+            </section>
+            
+            <section class="section">
+                <h2 class="section-title">Detalles del Pedido</h2>
+                
+                <table class="order-table" id="orderTable">
+                    <thead>
+                        <tr>
+                            <th>Código EAN</th>
+                            <th>Código de Barras</th>
+                            <th>Cantidad</th>
+                            <th>Artículo</th>
+                            <th>Precio Unitario (€)</th>
+                            <th>Total (€)</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTableBody">
+                        <!-- Las filas se agregarán dinámicamente -->
+                    </tbody>
+                </table>
+                
+                <button class="btn btn-add" id="addRowBtn">Añadir Artículo</button>
+                
+                <div class="total-section">
+                    Total del Pedido: <span class="total-amount" id="totalAmount">0.00</span> €
+                </div>
+            </section>
+            
+            <section class="section">
+                <h2 class="section-title">Observaciones</h2>
+                <textarea id="observations" placeholder="Añade aquí cualquier observación adicional sobre el pedido..."></textarea>
+            </section>
+            
+            <button class="btn btn-download" id="downloadBtn">Descargar Pedido en PDF</button>
+        </main>
+        
+        <footer>
+            <p>Laboraba - Especialistas en Ropa Laboral | Vitoria-Gasteiz</p>
+        </footer>
+    </div>
+
+    <script>
+        // Actualizar fecha y hora
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            const dateTimeString = now.toLocaleDateString('es-ES', options);
+            document.getElementById('currentDateTime').textContent = dateTimeString;
+        }
+        
+        // Actualizar cada segundo
+        setInterval(updateDateTime, 1000);
+        updateDateTime(); // Llamada inicial
+        
+        // Variables para la tabla de pedidos
+        let rowCount = 0;
+        
+        // Función para generar un código EAN-13 válido
+        function generateEAN13() {
+            // Generar 12 dígitos aleatorios
+            let ean = '84'; // Prefijo para España
+            for (let i = 0; i < 10; i++) {
+                ean += Math.floor(Math.random() * 10);
+            }
+            
+            // Calcular dígito de control
+            let sum = 0;
+            for (let i = 0; i < 12; i++) {
+                sum += parseInt(ean.charAt(i)) * (i % 2 === 0 ? 1 : 3);
+            }
+            const checksum = (10 - (sum % 10)) % 10;
+            
+            return ean + checksum;
+        }
+        
+        // Función para generar código de barras SVG con número visible
+        function generateBarcode(eanCode, containerId) {
+            // Limpiar contenedor
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            
+            // Crear canvas para el código de barras
+            const canvas = document.createElement('canvas');
+            canvas.id = `barcode-${containerId}`;
+            container.appendChild(canvas);
+            
+            // Generar código de barras con el número visible
+            JsBarcode(`#barcode-${containerId}`, eanCode, {
+                format: "EAN13",
+                width: 1.5,
+                height: 40,
+                displayValue: true,
+                fontOptions: "bold",
+                fontSize: 12,
+                textMargin: 2
+            });
+        }
+        
+        // Función para añadir una nueva fila a la tabla
+        function addTableRow() {
+            const tableBody = document.getElementById('orderTableBody');
+            const newRow = document.createElement('tr');
+            newRow.id = `row-${rowCount}`;
+            
+            // Generar código EAN único
+            const eanCode = generateEAN13();
+            const barcodeContainerId = `barcode-container-${rowCount}`;
+            
+            newRow.innerHTML = `
+                <td>
+                    <input type="text" class="ean-code" value="${eanCode}" readonly>
+                </td>
+                <td>
+                    <div class="barcode-container" id="${barcodeContainerId}"></div>
+                </td>
+                <td><input type="number" class="quantity" min="1" value="1"></td>
+                <td><input type="text" class="article" placeholder="Descripción del artículo"></td>
+                <td><input type="number" class="price" min="0" step="0.01" value="0.00"></td>
+                <td class="row-total">0.00</td>
+                <td><button class="btn btn-remove" onclick="removeRow(${rowCount})">Eliminar</button></td>
+            `;
+            
+            tableBody.appendChild(newRow);
+            
+            // Generar código de barras para esta fila
+            setTimeout(() => {
+                generateBarcode(eanCode, barcodeContainerId);
+            }, 100);
+            
+            // Añadir event listeners para los inputs de la nueva fila
+            const inputs = newRow.querySelectorAll('input');
+            inputs.forEach(input => {
+                if (!input.classList.contains('ean-code')) {
+                    input.addEventListener('input', updateRowTotal);
+                }
+            });
+            
+            rowCount++;
+            updateTotalAmount();
+        }
+        
+        // Función para eliminar una fila
+        function removeRow(rowId) {
+            const row = document.getElementById(`row-${rowId}`);
+            if (row) {
+                row.remove();
+                updateTotalAmount();
+            }
+        }
+        
+        // Función para actualizar el total de una fila
+        function updateRowTotal(event) {
+            const row = event.target.closest('tr');
+            if (!row) return;
+            
+            const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+            const price = parseFloat(row.querySelector('.price').value) || 0;
+            const rowTotal = quantity * price;
+            
+            row.querySelector('.row-total').textContent = rowTotal.toFixed(2);
+            updateTotalAmount();
+        }
+        
+        // Función para actualizar el total general
+        function updateTotalAmount() {
+            const rowTotals = document.querySelectorAll('.row-total');
+            let total = 0;
+            
+            rowTotals.forEach(cell => {
+                total += parseFloat(cell.textContent) || 0;
+            });
+            
+            document.getElementById('totalAmount').textContent = total.toFixed(2);
+        }
+        
+        // Añadir event listener al botón de añadir fila
+        document.getElementById('addRowBtn').addEventListener('click', addTableRow);
+        
+        // Añadir una fila inicial al cargar la página
+        window.addEventListener('DOMContentLoaded', addTableRow);
+        
+        // Función optimizada para generar códigos de barras en PDF
+        function generateBarcodeForPDF(eanCode) {
+            return new Promise((resolve) => {
+                // Crear un canvas oculto
+                const canvas = document.createElement('canvas');
+                canvas.width = 200;
+                canvas.height = 80;
+                
+                // Generar código de barras de alta calidad
+                JsBarcode(canvas, eanCode, {
+                    format: "EAN13",
+                    width: 1.8,
+                    height: 50,
+                    displayValue: true,
+                    fontSize: 14,
+                    textMargin: 4,
+                    margin: 10,
+                    background: "#ffffff",
+                    lineColor: "#000000"
+                });
+                
+                // Convertir a imagen de alta calidad
+                setTimeout(() => {
+                    const imgData = canvas.toDataURL('image/jpeg', 1.0);
+                    resolve(imgData);
+                }, 100);
+            });
+        }
+        
+        // Generar PDF mejorado
+        document.getElementById('downloadBtn').addEventListener('click', async function() {
+            const downloadBtn = this;
+            const originalText = downloadBtn.textContent;
+            downloadBtn.textContent = 'Generando PDF...';
+            downloadBtn.disabled = true;
+            
+            try {
+                // Obtener los valores del formulario
+                const commercialName = document.getElementById('commercialName').value || 'No especificado';
+                const clientName = document.getElementById('clientName').value || 'No especificado';
+                const clientContact = document.getElementById('clientContact').value || 'No especificado';
+                const fiscalData = document.getElementById('fiscalData').value || 'No especificado';
+                const observations = document.getElementById('observations').value || 'No hay observaciones';
+                const currentDateTime = document.getElementById('currentDateTime').textContent;
+                const totalAmount = document.getElementById('totalAmount').textContent;
+                
+                // Obtener datos de la tabla
+                const orderRows = [];
+                const rows = document.querySelectorAll('#orderTableBody tr');
+                
+                for (const row of rows) {
+                    const eanCode = row.querySelector('.ean-code').value || '';
+                    const quantity = row.querySelector('.quantity').value || '';
+                    const article = row.querySelector('.article').value || '';
+                    const price = row.querySelector('.price').value || '';
+                    const rowTotal = row.querySelector('.row-total').textContent || '';
+                    
+                    if (article) {
+                        // Generar código de barras para PDF
+                        const barcodeData = await generateBarcodeForPDF(eanCode);
+                        
+                        orderRows.push({
+                            eanCode,
+                            quantity,
+                            article,
+                            price,
+                            rowTotal,
+                            barcodeData
+                        });
+                    }
+                }
+                
+                // Crear el PDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Configuración del documento
+                doc.setFont("helvetica");
+                
+                // Encabezado
+                doc.setFontSize(18);
+                doc.setTextColor(44, 62, 80);
+                doc.text("LABORABA - PEDIDO DE ROPA LABORAL", 105, 15, { align: "center" });
+                
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text("Vitoria-Gasteiz", 105, 22, { align: "center" });
+                
+                // Fecha y hora
+                doc.setFontSize(9);
+                doc.setTextColor(150, 150, 150);
+                doc.text(`Pedido generado el: ${currentDateTime}`, 105, 28, { align: "center" });
+                
+                // Línea separadora
+                doc.setDrawColor(52, 152, 219);
+                doc.setLineWidth(0.5);
+                doc.line(15, 32, 195, 32);
+                
+                // Información del comercial y cliente
+                let yPosition = 42;
+                
+                doc.setFontSize(12);
+                doc.setTextColor(44, 62, 80);
+                doc.text("INFORMACIÓN DEL PEDIDO", 15, yPosition);
+                
+                yPosition += 8;
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                
+                doc.text(`Comercial: ${commercialName}`, 15, yPosition);
+                yPosition += 5;
+                doc.text(`Cliente: ${clientName}`, 15, yPosition);
+                yPosition += 5;
+                doc.text(`Contacto: ${clientContact}`, 15, yPosition);
+                yPosition += 5;
+                doc.text(`Datos Fiscales: ${fiscalData}`, 15, yPosition);
+                
+                // Detalles del pedido
+                yPosition += 12;
+                doc.setFontSize(12);
+                doc.setTextColor(44, 62, 80);
+                doc.text("DETALLES DEL PEDIDO", 15, yPosition);
+                
+                // Crear tabla en el PDF
+                yPosition += 8;
+                
+                // Encabezados de la tabla
+                doc.setFillColor(236, 240, 241);
+                doc.rect(15, yPosition, 180, 6, 'F');
+                doc.setTextColor(44, 62, 80);
+                doc.setFontSize(8);
+                doc.text("CÓDIGO BARRAS", 20, yPosition + 4);
+                doc.text("CANT.", 75, yPosition + 4);
+                doc.text("ARTÍCULO", 90, yPosition + 4);
+                doc.text("PRECIO", 150, yPosition + 4);
+                doc.text("TOTAL", 170, yPosition + 4);
+                
+                yPosition += 6;
+                
+                // Filas de la tabla
+                doc.setTextColor(0, 0, 0);
+                for (const row of orderRows) {
+                    // Verificar si necesitamos nueva página
+                    if (yPosition > 250) {
+                        doc.addPage();
+                        yPosition = 20;
+                        
+                        // Encabezados de la tabla en nueva página
+                        doc.setFillColor(236, 240, 241);
+                        doc.rect(15, yPosition, 180, 6, 'F');
+                        doc.setTextColor(44, 62, 80);
+                        doc.text("CÓDIGO BARRAS", 20, yPosition + 4);
+                        doc.text("CANT.", 75, yPosition + 4);
+                        doc.text("ARTÍCULO", 90, yPosition + 4);
+                        doc.text("PRECIO", 150, yPosition + 4);
+                        doc.text("TOTAL", 170, yPosition + 4);
+                        
+                        yPosition += 6;
+                    }
+                    
+                    // Añadir código de barras
+                    doc.addImage(row.barcodeData, 'JPEG', 17, yPosition, 50, 25);
+                    
+                    // Información del artículo
+                    doc.setFontSize(8);
+                    doc.text(row.quantity, 75, yPosition + 8);
+                    
+                    // Dividir el texto del artículo si es muy largo
+                    const articleLines = doc.splitTextToSize(row.article, 45);
+                    doc.text(articleLines, 90, yPosition + 8);
+                    
+                    doc.text(row.price + " €", 150, yPosition + 8);
+                    doc.text(row.rowTotal + " €", 170, yPosition + 8);
+                    
+                    // Mostrar código EAN debajo del código de barras
+                    doc.setFontSize(7);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`EAN: ${row.eanCode}`, 17, yPosition + 30);
+                    doc.setTextColor(0, 0, 0);
+                    
+                    yPosition += 35;
+                }
+                
+                // Total
+                yPosition += 10;
+                doc.setFontSize(10);
+                doc.setTextColor(44, 62, 80);
+                doc.text(`TOTAL DEL PEDIDO: ${totalAmount} €`, 160, yPosition, { align: "right" });
+                
+                // Observaciones
+                yPosition += 15;
+                if (yPosition > 240) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                
+                doc.setFontSize(12);
+                doc.setTextColor(44, 62, 80);
+                doc.text("OBSERVACIONES", 15, yPosition);
+                
+                yPosition += 8;
+                doc.setFontSize(9);
+                doc.setTextColor(0, 0, 0);
+                
+                const observationLines = doc.splitTextToSize(observations, 170);
+                doc.text(observationLines, 15, yPosition);
+                
+                // Pie de página
+                const pageHeight = doc.internal.pageSize.height;
+                doc.setFontSize(7);
+                doc.setTextColor(150, 150, 150);
+                doc.text("Laboraba - Especialistas en Ropa Laboral - Vitoria-Gasteiz", 105, pageHeight - 10, { align: "center" });
+                
+                // Guardar el PDF
+                const fileName = `Pedido_Laboraba_${clientName.replace(/\s+/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+                doc.save(fileName);
+                
+            } catch (error) {
+                console.error('Error generando PDF:', error);
+                alert('Error al generar el PDF. Por favor, inténtelo de nuevo.');
+            } finally {
+                downloadBtn.textContent = originalText;
+                downloadBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
